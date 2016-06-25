@@ -1043,45 +1043,31 @@ void Gui_DrawLoadScreen(int value)
 bool Gui_LoadScreenAssignPic(const char* pic_name)
 {
     char buf[MAX_ENGINE_PATH];
-    size_t len = strlen(pic_name);
-    size_t ext_len = 0;
 
     ///@STICK: we can write incorrect image file extension, but engine will try all supported formats
     strncpy(buf, pic_name, MAX_ENGINE_PATH);
     if(!Sys_FileFound(buf, 0))
     {
-        for(; ext_len + 1 < len; ext_len++)
-        {
-            if(buf[len-ext_len-1] == '.')
-            {
-                break;
-            }
-        }
-
-        if(ext_len + 1 == len)
+        char *last_dot = strrchr(buf, '.');
+        if (!last_dot)
         {
             return false;
         }
-
-        buf[len - ext_len + 0] = 'b';
-        buf[len - ext_len + 1] = 'm';
-        buf[len - ext_len + 2] = 'p';
-        buf[len - ext_len + 3] = 0;
+        if (last_dot + 4 >= buf + MAX_ENGINE_PATH)
+        {
+            return false;
+        }
+        
+        memcpy(last_dot + 1, "bmp", 4);
         if(!Sys_FileFound(buf, 0))
         {
-            buf[len - ext_len + 0] = 'j';
-            buf[len - ext_len + 1] = 'p';
-            buf[len - ext_len + 2] = 'g';
+            memcpy(last_dot + 1, "jpg", 4);
             if(!Sys_FileFound(buf, 0))
             {
-                buf[len - ext_len + 0] = 'p';
-                buf[len - ext_len + 1] = 'n';
-                buf[len - ext_len + 2] = 'g';
+                memcpy(last_dot + 1, "png", 4);
                 if(!Sys_FileFound(buf, 0))
                 {
-                    buf[len - ext_len + 0] = 't';
-                    buf[len - ext_len + 1] = 'g';
-                    buf[len - ext_len + 2] = 'a';
+                    memcpy(last_dot + 1, "tga", 4);
                     if(!Sys_FileFound(buf, 0))
                     {
                         return false;
